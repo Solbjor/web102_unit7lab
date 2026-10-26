@@ -11,7 +11,6 @@ const ReadPosts = () => {
             const { data, error } = await supabase
                 .from('Posts')
                 .select('*')
-                .order('created_at', { ascending: true })
 
             if (error) {
                 console.error('Unable to fetch posts:', error)

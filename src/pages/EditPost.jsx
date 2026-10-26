@@ -8,6 +8,7 @@ const EditPost = () => {
     const {id} = useParams()
     const navigate = useNavigate()
     const [post, setPost] = useState({id: null, title: "", author: "", description: ""})
+    const [errorMessage, setErrorMessage] = useState("")
 
     useEffect(() => {
         const fetchPost = async () => {
@@ -19,6 +20,7 @@ const EditPost = () => {
 
             if (error) {
                 console.error('Unable to fetch post:', error)
+                setErrorMessage(error.message)
                 return
             }
 
@@ -40,8 +42,9 @@ const EditPost = () => {
 
     const updatePost = async (event) => {
         event.preventDefault()
+        setErrorMessage("")
 
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from('Posts')
             .update({
                 title: post.title,
@@ -49,9 +52,18 @@ const EditPost = () => {
                 description: post.description,
             })
             .eq('id', id)
+            .select()
 
         if (error) {
             console.error('Unable to update post:', error)
+            setErrorMessage(error.message)
+            return
+        }
+
+        if (!data || data.length === 0) {
+            const message = 'No post was updated. Check that this post has a matching id.'
+            console.error(message)
+            setErrorMessage(message)
             return
         }
 
@@ -77,6 +89,7 @@ const EditPost = () => {
     return (
         <div>
             <form onSubmit={updatePost}>
+                {errorMessage && <p role="alert">{`Unable to save changes: ${errorMessage}`}</p>}
                 <label htmlFor="title">Title</label> <br />
                 <input type="text" id="title" name="title" value={post.title} onChange={handleChange} /><br />
                 <br/>
