@@ -1,9 +1,12 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import './CreatePost.css'
+import { supabase } from '../client'
 
 const CreatePost = () => {
 
     const [post, setPost] = useState({title: "", author: "", description: ""})
+    const navigate = useNavigate()
 
     const handleChange = (event) => {
         const {name, value} = event.target
@@ -15,9 +18,28 @@ const CreatePost = () => {
         })
     }
 
+    const createPost = async (event) => {
+        event.preventDefault()
+
+        const { error } = await supabase
+            .from('Posts')
+            .insert({
+                title: post.title,
+                author: post.author,
+                description: post.description,
+            })
+
+        if (error) {
+            console.error('Unable to create post:', error)
+            return
+        }
+
+        navigate('/')
+    }
+
     return (
         <div>
-            <form>
+            <form onSubmit={createPost}>
                 <label htmlFor="title">Title</label> <br />
                 <input type="text" id="title" name="title" onChange={handleChange} /><br />
                 <br/>

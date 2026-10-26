@@ -1,27 +1,41 @@
 import { useState, useEffect } from 'react'
 import Card from '../components/Card'
+import { supabase } from '../client'
 
-const ReadPosts = (props) => {
+const ReadPosts = () => {
 
     const [posts, setPosts] = useState([])
 
     useEffect(() => {
-        setPosts(props.data)
-    }, [props])
+        const fetchPosts = async () => {
+            const { data, error } = await supabase
+                .from('Posts')
+                .select('*')
+                .order('created_at', { ascending: true })
+
+            if (error) {
+                console.error('Unable to fetch posts:', error)
+                return
+            }
+
+            setPosts(data)
+        }
+
+        fetchPosts()
+    }, [])
     
     return (
         <div className="ReadPosts">
             {
                 posts && posts.length > 0 ?
-                [...posts]
-                .sort((a, b) => a.id - b.id)
-                .map((post,index) => 
+                posts.map((post) => 
                     <Card 
                         key={post.id}
                         id={post.id} 
                         title={post.title}
                         author={post.author}
                         description={post.description}
+                        betCount={post.betCount}
                     />
                 ) : <h2>{'No Challenges Yet 😞'}</h2>
             }
